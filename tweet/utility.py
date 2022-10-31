@@ -61,11 +61,13 @@ def whole_convo_crawling(tweets, saved_convo_dir, client):
         query = f"conversation_id:{conv_id}"
         search_results = client.search_all(query=query,
                                         start_time=start_time, max_results=100)
+        if_have_convo_data = False
         for page in search_results:
             # put the page loop first, since, we may not have the conversations
             result = expansions.flatten(page)
             for tweet in result:
                 # print(tweet[TEXT])
+                if_have_convo_data = True
                 if if_tweet_id_different_convo_id:
                     with open(convo_csv_fp, 'a+') as f:
                         f.write(json.dumps(tweet) + '\n')
@@ -74,6 +76,16 @@ def whole_convo_crawling(tweets, saved_convo_dir, client):
                 else:
                     with open(convo_csv_fp, 'a+') as f:
                         f.write(json.dumps(tweet) + '\n')     
+        if not if_have_convo_data:
+            if if_tweet_id_different_convo_id:
+                with open(convo_csv_fp, 'a+') as f:
+                    f.write('None' + '\n')
+                with open(convo_csv_fp_real, 'a+') as f:
+                    f.write('None' + '\n')
+            else:
+                with open(convo_csv_fp, 'a+') as f:
+                    f.write('None' + '\n')  
+
 
 # ==== text process ====
 def strip_all_entities(text):
