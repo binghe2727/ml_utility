@@ -2,7 +2,79 @@
 
 import string, re
 import csv
-# by bing
+
+
+from twarc import Twarc2, expansions
+from constant import *
+import datetime
+import json
+
+def tweet_look_up_by_id(tweet_ids: list, client):
+    lookup = client.tweet_lookup(tweet_ids=tweet_ids)
+    tweet_res = []
+    try:
+        for page in lookup:
+            try:
+                result = expansions.flatten(page)
+                for tweet in result:
+                    tweet_res.append(tweet)
+            except ValueError:
+                print(f"skip one unaccessible tweet id in one page and continue")
+                continue
+        if len(tweet_res) < 1:
+            return None
+        else:
+            return tweet_res
+    except ValueError:
+        print(f"encounter one unaccessible tweet id in one lookup(batch)")
+        return None
+
+
+def whole_convo_crawling(tweets, saved_convo_dir, client):
+    # look up the whole conversation from a tweet-id
+    for tweet_obj in tweets:
+        tweet_id = tweet_obj[ID]
+
+        convo_csv_fp = f"{saved_convo_dir}/{tweet_id}.text"
+        #%%
+        created_at = tweet_obj[CREATED_AT]
+        #%%
+        # print(created_at)
+        #%%
+        year = created_at[0:4]
+        month = created_at[5:7]
+        day = created_at[8:10]
+        #%%
+        conv_id = tweet_obj[CONVERSATION_ID]
+        print(f" process tweet-id: {tweet_id}, convo-id: {conv_id}")
+        
+        if tweet_id != conv_id:
+            if_tweet_id_different_convo_id = True
+            convo_csv_fp_real = f"{saved_convo_dir}/{conv_id}.text"
+        else:
+            if_tweet_id_different_convo_id = False
+
+        start_time = datetime.datetime(int(year), int(month), int(day), 0, 0, 0, 0,
+                                    datetime.timezone.utc)
+        #%%
+        query = f"conversation_id:{conv_id}"
+        search_results = client.search_all(query=query,
+                                        start_time=start_time, max_results=100)
+        for page in search_results:
+            # put the page loop first, since, we may not have the conversations
+            result = expansions.flatten(page)
+            for tweet in result:
+                # print(tweet[TEXT])
+                if if_tweet_id_different_convo_id:
+                    with open(convo_csv_fp, 'a+') as f:
+                        f.write(json.dumps(tweet) + '\n')
+                    with open(convo_csv_fp_real, 'a+') as f:
+                        f.write(json.dumps(tweet) + '\n')
+                else:
+                    with open(convo_csv_fp, 'a+') as f:
+                        f.write(json.dumps(tweet) + '\n')     
+
+# ==== text process ====
 def strip_all_entities(text):
     # ==== error 1 ====: isn't -> isn t
     # entity_prefixes = ['@']

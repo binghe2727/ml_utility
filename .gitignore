@@ -1,4 +1,8 @@
+# by bing
 .idea/
+# avoid the release of bearer code
+tweet/constant.py
+tweet/constant.ipynb
 
 #####
 ## Ignore Visual Studio temporary files, build results, and
