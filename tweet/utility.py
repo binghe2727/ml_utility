@@ -2,13 +2,15 @@
 
 import string, re
 import csv
-
+import os
 
 from twarc import Twarc2, expansions
-from constant import *
+from .constant import *
 import datetime
 import json
 
+
+# ==== tweet crawling ====
 def tweet_look_up_by_id(tweet_ids: list, client):
     lookup = client.tweet_lookup(tweet_ids=tweet_ids)
     tweet_res = []
@@ -35,16 +37,12 @@ def whole_convo_crawling(tweets, saved_convo_dir, client):
     for tweet_obj in tweets:
         tweet_id = tweet_obj[ID]
 
-        convo_csv_fp = f"{saved_convo_dir}/{tweet_id}.text"
-        #%%
+        convo_csv_fp = f"{saved_convo_dir}/{tweet_id}.text"        #%%
         created_at = tweet_obj[CREATED_AT]
-        #%%
-        # print(created_at)
-        #%%
+        # print(created_at)     #%%
         year = created_at[0:4]
         month = created_at[5:7]
-        day = created_at[8:10]
-        #%%
+        day = created_at[8:10]       #%%
         conv_id = tweet_obj[CONVERSATION_ID]
         print(f" process tweet-id: {tweet_id}, convo-id: {conv_id}")
         
@@ -54,9 +52,12 @@ def whole_convo_crawling(tweets, saved_convo_dir, client):
         else:
             if_tweet_id_different_convo_id = False
 
+        if os.path.exists(convo_csv_fp):
+            print(f'file: {convo_csv_fp} exists, and move to the next one')
+            continue
+
         start_time = datetime.datetime(int(year), int(month), int(day), 0, 0, 0, 0,
-                                    datetime.timezone.utc)
-        #%%
+                                    datetime.timezone.utc)        #%%
         query = f"conversation_id:{conv_id}"
         search_results = client.search_all(query=query,
                                         start_time=start_time, max_results=100)
