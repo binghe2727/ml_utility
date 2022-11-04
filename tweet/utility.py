@@ -90,7 +90,7 @@ def whole_convo_crawling(tweets, saved_convo_dir, client):
 def tweet_1reply_2reply_csv_creation(txt_file, saved_convo_csv_directory, client=Twarc2(bearer_token=BEAR_CDOE_BH)):
     # example: txt_file = f'{1451660101614555145}.text'
 
-    tweet_id = txt_file.split('.')[0]
+    tweet_id = txt_file.split('/')[-1].split('.')[0]
     
     # step x: invalid tweet id
     with open(txt_file, 'r') as lines:
