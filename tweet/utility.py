@@ -32,7 +32,8 @@ def tweet_look_up_by_id(tweet_ids: list, client):
         return None
 
 
-def whole_convo_crawling(tweets, saved_convo_dir, client):
+def whole_convo_crawling(tweets, saved_convo_dir, client,
+        if_limit_num_of_pages=False, num_of_pages=1000):
     # look up the whole conversation from a tweet-id
     for tweet_obj in tweets:
         tweet_id = tweet_obj[ID]
@@ -57,14 +58,18 @@ def whole_convo_crawling(tweets, saved_convo_dir, client):
             continue
 
         start_time = datetime.datetime(int(year), int(month), int(day), 0, 0, 0, 0,
-                                    datetime.timezone.utc)        #%%
+                                    datetime.timezone.utc)        
         query = f"conversation_id:{conv_id}"
         search_results = client.search_all(query=query,
                                         start_time=start_time, max_results=100)
         # TODO: find the place where we have 503 response code
+        # updated on Nov 4 2022: some conversations are so long, like this 959888315401957376.text
+        # for line numbers by "wc -l xx.text". at least: 903015
         print('after search_all conversation query, start to expand results')
         if_have_convo_data = False
-        for page in search_results:
+        # for one page: it will contain at most 100 crawled tweets
+        # search_results will have multiple calls for N*100 tweets of the thread for the check up
+        for page_id, page in enumerate(search_results):
             # put the page loop first, since, we may not have the conversations
             result = expansions.flatten(page)
             for tweet in result:
@@ -77,7 +82,13 @@ def whole_convo_crawling(tweets, saved_convo_dir, client):
                         f.write(json.dumps(tweet) + '\n')
                 else:
                     with open(convo_csv_fp, 'a+') as f:
-                        f.write(json.dumps(tweet) + '\n')     
+                        f.write(json.dumps(tweet) + '\n')
+            # ==== if we only focus on 100*num_of_pages replies
+            if if_limit_num_of_pages:
+                if page_id > num_of_pages:
+                    print('we stop the conversation search due to the page limit')
+                    break                    
+            # ==== end ====
         if not if_have_convo_data:
             if if_tweet_id_different_convo_id:
                 with open(convo_csv_fp, 'a+') as f:
