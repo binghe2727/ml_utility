@@ -61,6 +61,8 @@ def whole_convo_crawling(tweets, saved_convo_dir, client):
         query = f"conversation_id:{conv_id}"
         search_results = client.search_all(query=query,
                                         start_time=start_time, max_results=100)
+        # TODO: find the place where we have 503 response code
+        print('after search_all conversation query, start to expand results')
         if_have_convo_data = False
         for page in search_results:
             # put the page loop first, since, we may not have the conversations
