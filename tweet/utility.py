@@ -53,8 +53,13 @@ def whole_convo_crawling(tweets, saved_convo_dir, client,
         else:
             if_tweet_id_different_convo_id = False
 
+        # if convo is the same
         if os.path.exists(convo_csv_fp):
             print(f'file: {convo_csv_fp} exists, and move to the next one')
+            continue
+        # if the convo is different
+        if if_tweet_id_different_convo_id and os.path.exists(convo_csv_fp_real):
+            print(f'file: {convo_csv_fp_real} differernt convo master exists, and move to the next one')
             continue
 
         start_time = datetime.datetime(int(year), int(month), int(day), 0, 0, 0, 0,
