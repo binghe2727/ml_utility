@@ -129,7 +129,7 @@ def tweet_1reply_2reply_csv_creation(txt_file, saved_convo_csv_directory, client
     # write (id, tweet, 1-level reply, 2-level reply) csv
     with open(csv_fp, "w", encoding="utf-8") as f:
         csv_writer = csv.writer(f)
-        header = ["id", "tweet", "1-level reply", '2-level reply']
+        header = ["id", "tweet", "1-level_reply", '2-level_reply']
         csv_writer.writerow(header)
         csv_writer.writerow([tweet_obj[ID], tweet_obj[TEXT], '', ''])
         
