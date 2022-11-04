@@ -114,9 +114,11 @@ def tweet_1reply_2reply_csv_creation(txt_file, saved_convo_csv_directory, client
     # # end 
     # tweet id: sometimes, we cannot crawl the tweet id again, like: 1355286194058387463, found on Nov 3 2022
     # Based on this, I add the following check
+    if tweet_obj == None:
+        return None
     if tweet_obj is None:
         return None
-    
+
     tweet_obj = tweet_obj[0]
     print(f'process conversation related to tweet-id: {tweet_obj[ID]}')
 
