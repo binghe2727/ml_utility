@@ -3,6 +3,9 @@
 # avoid the release of bearer code
 tweet/constant.py
 tweet/constant.ipynb
+*.csv
+*.text
+*.DS_Store
 
 #####
 ## Ignore Visual Studio temporary files, build results, and

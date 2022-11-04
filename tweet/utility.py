@@ -87,6 +87,60 @@ def whole_convo_crawling(tweets, saved_convo_dir, client):
                     f.write('None' + '\n')  
 
 
+def tweet_1reply_2reply_csv_creation(txt_file, saved_convo_csv_directory, client=Twarc2(bearer_token=BEAR_CDOE_BH)):
+    # example: txt_file = f'{1451660101614555145}.text'
+
+    tweet_id = txt_file.split('.')[0]
+    
+    # step x: invalid tweet id
+    with open(txt_file, 'r') as lines:
+        for line in lines:
+            if line.startswith('None'):
+                print(f'unaccessible tweet id of: {tweet_id}')
+                return None
+            else:
+                pass
+
+    # step x: existance of csv of tweet conversation
+    csv_fp = f'{saved_convo_csv_directory}/{tweet_id}.csv'
+    if os.path.exists(csv_fp):
+        print(f'file: {csv_fp} exists, and move to the next one')
+        return None
+
+    # step x: file collection and summarization
+    tweet_obj = tweet_look_up_by_id([tweet_id], client=client)
+    # # file preparation only 
+    # whole_convo_crawling(tweet_obj, saved_convo_dir='./', client=Twarc2(bearer_token=BEAR_CDOE_BH))
+    # # end 
+    tweet_obj = tweet_obj[0]
+    print(f'process conversation related to tweet-id: {tweet_obj[ID]}')
+
+    referenced_id2tweet_obj = {}
+
+    with open(txt_file, 'r') as f:
+        for line in f:
+            tweet_obj_in_convo = json.loads(line)
+            referenced_tweet_id = tweet_obj_in_convo[REFERENCED_TWEET][0][ID]
+            if referenced_tweet_id in referenced_id2tweet_obj:
+                referenced_id2tweet_obj[referenced_tweet_id].append(tweet_obj_in_convo)
+            else:
+                referenced_id2tweet_obj[referenced_tweet_id] = [tweet_obj_in_convo]
+    # write (id, tweet, 1-level reply) csv
+    # write (id, tweet, 1-level reply, 2-level reply) csv
+    with open(csv_fp, "w", encoding="utf-8") as f:
+        csv_writer = csv.writer(f)
+        header = ["id", "tweet", "1-level reply", '2-level reply']
+        csv_writer.writerow(header)
+        csv_writer.writerow([tweet_obj[ID], tweet_obj[TEXT], '', ''])
+        
+        for index, first_level_reply in enumerate(referenced_id2tweet_obj[tweet_obj[ID]]):
+            # write 1-level reply
+            csv_writer.writerow([first_level_reply[ID], '', first_level_reply[TEXT], ''])
+            # write 2-level reply
+            if first_level_reply[ID] in referenced_id2tweet_obj:
+                for second_level_reply in referenced_id2tweet_obj[first_level_reply[ID]]:
+                    csv_writer.writerow([second_level_reply[ID], '', '', second_level_reply[TEXT]])
+
 # ==== text process ====
 def strip_all_entities(text):
     # ==== error 1 ====: isn't -> isn t
