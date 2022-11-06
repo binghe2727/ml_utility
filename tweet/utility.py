@@ -154,20 +154,20 @@ def tweet_1reply_2reply_csv_creation(txt_file, saved_convo_csv_directory, client
     # write (id, tweet, 1-level reply, 2-level reply) csv
     with open(csv_fp, "w", encoding="utf-8") as f:
         csv_writer = csv.writer(f)
-        header = ["id", "tweet", "1-level_reply", '2-level_reply']
+        header = ['id', 'referenced_id', 'tweet', '1_level_reply', '2_level_reply']
         csv_writer.writerow(header)
-        csv_writer.writerow([tweet_obj[ID], tweet_obj[TEXT], '', ''])
+        csv_writer.writerow([tweet_obj[ID], '', tweet_obj[TEXT], '', ''])
         
         # error on tweet id: 1374790691998593026
         # add the following if line
         if tweet_obj[ID] in referenced_id2tweet_obj:
             for _, first_level_reply in enumerate(referenced_id2tweet_obj[tweet_obj[ID]]):
                 # write 1-level reply
-                csv_writer.writerow([first_level_reply[ID], '', first_level_reply[TEXT], ''])
+                csv_writer.writerow([first_level_reply[ID], tweet_obj[ID], '', first_level_reply[TEXT], ''])
                 # write 2-level reply
                 if first_level_reply[ID] in referenced_id2tweet_obj:
                     for second_level_reply in referenced_id2tweet_obj[first_level_reply[ID]]:
-                        csv_writer.writerow([second_level_reply[ID], '', '', second_level_reply[TEXT]])
+                        csv_writer.writerow([second_level_reply[ID], first_level_reply[ID], '', '', second_level_reply[TEXT]])
 
 # ==== text process ====
 def strip_all_entities(text):
