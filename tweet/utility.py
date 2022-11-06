@@ -8,6 +8,7 @@ from twarc import Twarc2, expansions
 from .constant import *
 import datetime
 import json
+import pandas as pd
 
 
 # ==== tweet crawling ====
@@ -168,6 +169,22 @@ def tweet_1reply_2reply_csv_creation(txt_file, saved_convo_csv_directory, client
                 if first_level_reply[ID] in referenced_id2tweet_obj:
                     for second_level_reply in referenced_id2tweet_obj[first_level_reply[ID]]:
                         csv_writer.writerow([second_level_reply[ID], first_level_reply[ID], '', '', second_level_reply[TEXT]])
+
+def expand_tweet_and_1level_reply(tweet_convo_in_csv):
+    tweet_convo_in_df = pd.read_csv(tweet_convo_in_csv, dtype=str)
+    df = tweet_convo_in_df
+    FIRST_LEVEL_REPLY = '1_level_reply'
+    TWEET = 'tweet'
+
+    if df[df[FIRST_LEVEL_REPLY].notnull()].shape[0] > 0:
+        df_merged = pd.merge(df[df[FIRST_LEVEL_REPLY].notnull()].drop(['tweet', '2_level_reply'], axis=1), 
+        df[df[TWEET].notnull()][['id', 'tweet']], left_on='referenced_id', right_on='id')
+        df_merged = df_merged.rename(columns={'id_x': 'id'}) # or inplace=True
+        df_merged = df_merged.drop(['id_y'], axis=1)
+        df_merged = df_merged[['id', 'referenced_id', 'tweet', '1_level_reply']]
+        return df_merged
+    else:
+        return None
 
 # ==== text process ====
 def strip_all_entities(text):
