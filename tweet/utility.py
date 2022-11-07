@@ -177,11 +177,22 @@ def expand_tweet_and_1level_reply(tweet_convo_in_csv):
     TWEET = 'tweet'
 
     if df[df[FIRST_LEVEL_REPLY].notnull()].shape[0] > 0:
+        # make the tweet, 1-level reply row in the dataframe
         df_merged = pd.merge(df[df[FIRST_LEVEL_REPLY].notnull()].drop(['tweet', '2_level_reply'], axis=1), 
-        df[df[TWEET].notnull()][['id', 'tweet']], left_on='referenced_id', right_on='id')
+                            df[df[TWEET].notnull()][['id', 'tweet']], left_on='referenced_id', right_on='id')
         df_merged = df_merged.rename(columns={'id_x': 'id'}) # or inplace=True
         df_merged = df_merged.drop(['id_y'], axis=1)
         df_merged = df_merged[['id', 'referenced_id', 'tweet', '1_level_reply']]
+
+        # add the # of 2-level replies
+        group_data_stat = df.groupby(['referenced_id']).size()
+        group_data_stat = group_data_stat.reset_index()
+        group_data_stat.columns = ['referenced_id', '#_of_2level_replies']
+        # group_data_stat
+        df_merged = pd.merge(df_merged, group_data_stat, left_on='id', right_on='referenced_id', how='left')\
+            .drop(['referenced_id_y'], axis=1)\
+            .rename(columns={'referenced_id_x': 'referenced_id'})
+
         return df_merged
     else:
         return None
