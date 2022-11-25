@@ -11,6 +11,17 @@ import json
 import pandas as pd
 
 
+# ==== tweet id existence filtering ====
+def find_uncrawled_tweet_id(all_tweet_id, crawled_folder):
+    all_tweet_id = [ int(i) for i in all_tweet_id]
+    existing_tweet_id = [ int(tweet_id_file.split('.')[0]) for tweet_id_file in os.listdir(crawled_folder)]
+    crawled_tweet_id = list(set(all_tweet_id) & set(existing_tweet_id))
+    uncrawled_tweet_id = list(set(all_tweet_id) - set(existing_tweet_id))
+    print(f'{len(crawled_tweet_id)}/{len(all_tweet_id)} has been crawled, we only crawl {len(uncrawled_tweet_id)} tweets')
+    all_tweet_id = uncrawled_tweet_id
+    return all_tweet_id
+
+
 # ==== tweet crawling ====
 def tweet_look_up_by_id(tweet_ids: list, client):
     lookup = client.tweet_lookup(tweet_ids=tweet_ids)
@@ -31,7 +42,12 @@ def tweet_look_up_by_id(tweet_ids: list, client):
     except ValueError:
         print(f"encounter one unaccessible tweet id in one lookup(batch)")
         return None
-
+    # except:
+    # when someone changes the academic api key
+    #     # maybe it is 
+    #     # log requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: 
+    #     print(f"encounter one unaccessible tweet id in one lookup(batch)")
+    #     return None
 
 def whole_convo_crawling(tweets, saved_convo_dir, client,
         if_limit_num_of_pages=False, num_of_pages=1000):

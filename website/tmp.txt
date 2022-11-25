@@ -1,0 +1,7 @@
+# gatech website
+# https://github.com/uwsampa/research-group-web
+# git checkout . # at the _site folder
+# sudo make
+# sudo make serve
+# the git pull at _site: 
+# rediction: 1) change the index.html at the parent level; 2) change the index.html at _site folder
