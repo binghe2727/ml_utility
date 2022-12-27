@@ -1,5 +1,6 @@
 # by bing
 .idea/
+tweet/stream_crawl/
 # avoid the release of bearer code
 tweet/constant.py
 tweet/constant.ipynb
